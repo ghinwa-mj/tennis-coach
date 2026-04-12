@@ -1,6 +1,7 @@
 import { UserProfile, defaultUserProfile } from '@/types/user';
 
 const STORAGE_KEY = 'tennisCoach_userProfile';
+const RAG_ENABLED_KEY = 'tennisCoach_ragEnabled';
 
 export const storage = {
   getUserProfile(): UserProfile {
@@ -46,6 +47,28 @@ export const storage = {
       return !!stored;
     } catch {
       return false;
+    }
+  },
+
+  // RAG settings
+  isRAGEnabled(): boolean {
+    if (typeof window === 'undefined') return false;
+
+    try {
+      const stored = localStorage.getItem(RAG_ENABLED_KEY);
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  setRAGEnabled(enabled: boolean): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      localStorage.setItem(RAG_ENABLED_KEY, String(enabled));
+    } catch (error) {
+      console.error('Error saving RAG setting:', error);
     }
   },
 };

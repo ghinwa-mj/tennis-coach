@@ -10,12 +10,14 @@ import { storage } from '@/lib/storage';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  sources?: Array<{ citation: string; metadata: any }>;
 }
 
 export default function ChatInterface() {
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [ragEnabled, setRagEnabled] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -28,7 +30,7 @@ export default function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const threadIdRef = useRef(crypto.randomUUID());
 
-  // Load user profile on mount
+  // Load user profile and RAG setting on mount
   useEffect(() => {
     const hasOnboarded = storage.hasCompletedOnboarding();
     if (!hasOnboarded) {
@@ -37,6 +39,10 @@ export default function ChatInterface() {
       const profile = storage.getUserProfile();
       setUserProfile(profile);
     }
+
+    // Load RAG setting
+    const ragSetting = storage.isRAGEnabled();
+    setRagEnabled(ragSetting);
   }, []);
 
   const scrollToBottom = () => {
@@ -64,6 +70,7 @@ export default function ChatInterface() {
           messages: [...messages, userMessage],
           userProfile,
           threadId: threadIdRef.current,
+          ragEnabled,
         }),
       });
 
@@ -84,6 +91,12 @@ export default function ChatInterface() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRagToggle = () => {
+    const newValue = !ragEnabled;
+    setRagEnabled(newValue);
+    storage.setRAGEnabled(newValue);
   };
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
@@ -111,12 +124,25 @@ export default function ChatInterface() {
               <p className="text-sm text-gray-500">Your personal tennis coach</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowProfile(true)}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
-          >
-            👤 Profile
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleRagToggle}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                ragEnabled
+                  ? 'bg-blue-500 text-white hover:bg-blue-600'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title={ragEnabled ? 'RAG enabled - Using knowledge base' : 'RAG disabled - Using general knowledge'}
+            >
+              📚 {ragEnabled ? 'RAG On' : 'RAG Off'}
+            </button>
+            <button
+              onClick={() => setShowProfile(true)}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              👤 Profile
+            </button>
+          </div>
         </div>
       </header>
 
@@ -124,7 +150,21 @@ export default function ChatInterface() {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message, index) => (
-            <MessageBubble key={index} role={message.role} content={message.content} />
+            <div key={index}>
+              <MessageBubble role={message.role} content={message.content} />
+              {message.sources && message.sources.length > 0 && (
+                <div className="mt-2 mb-4 ml-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-xs font-semibold text-blue-800 mb-2">📚 Sources:</div>
+                  <ul className="space-y-1">
+                    {message.sources.map((source, idx) => (
+                      <li key={idx} className="text-xs text-blue-700">
+                        {idx + 1}. {source.citation}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           ))}
           {isLoading && (
             <div className="flex justify-start mb-4">

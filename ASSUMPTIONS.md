@@ -1,142 +1,154 @@
-# Technical Assumptions & Future Work
+# RAG Implementation Assumptions
 
-This document tracks assumptions and shortcuts taken during development that need to be addressed later.
+## Overview
+This document outlines the assumptions, design decisions, and technical choices made during the implementation of the Retrieval-Augmented Generation (RAG) system for TennisCoach AI.
 
----
+## Architecture & Design Decisions
 
-## Authentication & Data Persistence
+### 1. Retrieval Strategy
+- **Embedding Model**: OpenRouter's `openai/text-embedding-3-small`
+  - Chosen for cost-effectiveness and good performance on general text
+  - Embedding dimension: 1536 (default for this model)
+  - Assumption: This model provides sufficient semantic understanding for tennis coaching content
 
-### Current State
-- **No user authentication** - anyone can access the app
-- **Local storage only** - user profile stored in browser's localStorage
-- **No server-side persistence** - data lost if browser cache is cleared
-- **No conversation history** - chats are not saved between sessions
+- **Vector Store**: ChromaDB (Cloud-hosted)
+  - Already configured with existing tennis literature
+  - Assumption: Cloud-hosted ChromaDB provides adequate performance and reliability
 
-### Future Improvements
-- [ ] Add user authentication (email/password, OAuth, or magic link)
-- [ ] Implement server-side database (PostgreSQL, MongoDB, etc.)
-- [ ] Store conversation history with pagination
-- [ ] Sync user profile across devices
-- [ ] Add account deletion and data export (GDPR compliance)
+- **Top-K Retrieval**: Fixed at K=5 documents per query
+  - Assumption: 5 documents provide sufficient context without overwhelming the prompt
+  - Trade-off: More documents = more context but higher token usage and potential for noise
 
----
+### 2. Citation System
+- **Citation Format**: `[Source X]` where X is the document number (1-5)
+  - Simple, user-friendly format
+  - Assumption: Numbered citations are easier to reference than author-year format
 
-## Privacy & Security
+- **Citation Display**: Sources shown below assistant message in blue box
+  - Visual distinction makes it clear what's from the knowledge base
+  - Assumption: Users want to see source attribution for trust and verification
 
-### Current State
-- **API key exposed in client** - .env.local is accessible in build
-- **No rate limiting** - API could be abused
-- **No input sanitization** - relying on API provider's safety
-- **No CORS restrictions** - accepts requests from anywhere
+### 3. Prompt Engineering
+- **Base System Prompt**: Existing TennisCoach AI prompt used as foundation
+- **RAG Augmentation**: Retrieved documents appended with explicit citation requirements
+- **Citation Instruction Format**:
+  ```
+  **IMPORTANT CITATION REQUIREMENTS:**
+  - When you use information from these documents, you MUST cite it using the format [Source X]
+  - If you combine information from multiple sources, cite all of them: [Source 1][Source 3]
+  - If the answer doesn't come from the documents, you can still use your general tennis knowledge
+  ```
 
-### Future Improvements
-- [ ] Move API calls to protected backend service
-- [ ] Implement rate limiting per user/IP
-- [ ] Add CSRF protection
-- [ ] Sanitize user inputs before sending to AI
-- [ ] Add content moderation for inappropriate queries
+- **Assumption**: Explicit citation requirements lead to consistent citation behavior from the LLM
+- **Trade-off**: Strong citation enforcement may reduce response fluency slightly
 
----
+### 4. User Interface
+- **RAG Toggle**: Button in header (📚 RAG On/Off)
+  - Users can enable/disable RAG per session
+  - Setting persisted in localStorage
+  - Assumption: Users want control over when to use the knowledge base
 
-## AI Configuration
+- **Visual Design**:
+  - RAG On: Blue button (active state)
+  - RAG Off: Gray button (inactive state)
+  - Sources displayed in blue box below response
+  - Assumption: Color coding makes RAG state clear at a glance
 
-### Current State
-- **Fixed model** - always uses claude-sonnet-4-20250514
-- **Fixed temperature/parameters** - no customization
-- **No streaming responses** - waits for complete response
-- **Basic error handling** - generic error messages
+### 5. Error Handling
+- **RAG Failures**: Graceful degradation
+  - If vector store query fails, chat continues without RAG
+  - Assumption: Partial functionality is better than complete failure
+  - User sees normal response without sources
 
-### Future Improvements
-- [ ] Add streaming responses for better UX
-- [ ] Let users choose AI model/parameters
-- [ ] Implement conversation context limits
-- [ ] Add fallback/retry logic with exponential backoff
-- [ ] Cache common responses to reduce API costs
+- **Empty Results**: No special handling
+  - If no relevant documents found, system proceeds without retrieved context
+  - Assumption: LLM will provide good general advice even without specific documents
 
----
+### 6. Performance Considerations
+- **Latency Impact**: RAG adds ~1-2 seconds per query
+  - Vector store query: ~500ms
+  - Embedding generation: ~300ms
+  - Assumption: This latency is acceptable for the value added
 
-## User Experience
+- **Token Usage**: RAG increases prompt size
+  - Each retrieved document: ~500-1000 tokens (depends on chunk size)
+  - Total additional: ~2500-5000 tokens for 5 documents
+  - Assumption: Within acceptable cost/performance bounds
 
-### Current State
-- **Single-page app** - no navigation between sections
-- **No mobile app** - web-only (responsive but not native)
-- **No offline support** - requires internet connection
-- **Basic chat interface** - no rich features (voice, images, etc.)
+### 7. Data & Metadata
+- **Document Metadata Available**:
+  - filename
+  - category
+  - chunkIndex
+  - totalPages
+  - origin
+  - paperId (for academic papers)
+  - title
+  - authors
+  - year
+  - url
 
-### Future Improvements
-- [ ] Add specialized sections (Backhand, Forehand, Serve, Tactics, Fitness)
-- [ ] Implement mobile app (React Native or Flutter)
-- [ ] Add offline mode with cached content
-- [ ] Support voice input/output
-- [ ] Enable image/video upload for stroke analysis
-- [ ] Add drill library with video demonstrations
-- [ ] Implement progress tracking and statistics
+- **Citation Format**: Prioritizes title, then year + authors
+  - Format: `"Title (year) by authors"` or `"Title (year)"` or `"Title"`
+  - Assumption: This hierarchy provides the most useful citation format
 
----
+### 8. Retrieval Scope
+- **Query Scope**: Only the latest user message is embedded for retrieval
+  - Not: Conversation history, previous messages
+  - Assumption: Latest message contains the core question/topic
+  - Trade-off: May miss context from earlier in conversation
 
-## Content & Knowledge Base
+### 9. Integration with Existing Features
+- **Personalization**: RAG works with user profiles
+  - System prompt includes both profile personalization AND retrieved documents
+  - Assumption: These two features are complementary, not conflicting
 
-### Current State
-- **No external knowledge base** - only AI's training data
-- **No video integration** - can't analyze or reference footage
-- **No coaching resources** - no imported literature or guides
-- **General tennis knowledge** - not personalized to user's context
+- **Thread Tracking**: RAG state included in LangSmith metadata
+  - Enables analysis of RAG usage patterns
+  - Assumption: Analytics will help optimize RAG performance
 
-### Future Improvements
-- [ ] Build RAG (Retrieval-Augmented Generation) system
-- [ ] Index professional coaching videos and resources
-- [ ] Import tennis literature and coaching guides
-- [ ] Add video analysis capabilities (pose detection, stroke comparison)
-- [ ] Create drill library with progressions
-- [ ] Add tactical scenarios and match analysis tools
+### 10. Future Optimization Opportunities
+1. **Adaptive Top-K**: Adjust K based on query complexity
+2. **Query Expansion**: Use conversation history for better retrieval
+3. **Reranking**: Add a reranking step to improve relevance
+4. **Hybrid Search**: Combine semantic search with keyword search
+5. **Citation Quality Metrics**: Track how well LLM follows citation requirements
 
----
+## Configuration Constants
+- `TOP_K_RESULTS = 5`: Number of documents to retrieve
+- `EMBEDDING_MODEL = "openai/text-embedding-3-small"`
+- `CHUNK_SIZE = 2500` (from .env.local)
+- `CHUNK_OVERLAP = 250` (from .env.local)
 
-## Monitoring & Analytics
+## Environment Variables Required
+- `OPENROUTER_API_KEY`: For embedding generation
+- `CHROMADB_API_KEY`: For vector store access
+- `CHROMADB_TENANT`: ChromaDB tenant ID
+- `CHROMADB_DATABASE`: Database name
+- `CHROMADB_CLOUD`: Set to "true" for cloud-hosted ChromaDB
 
-### Current State
-- **No usage tracking** - can't see how users interact with app
-- **No error tracking** - no visibility into issues
-- **No performance monitoring** - don't know API costs or response times
-- **No user feedback** - no way to collect suggestions
+## Testing & Validation
+- **Manual Testing Required**:
+  - [ ] RAG toggle functionality
+  - [ ] Citation accuracy
+  - [ ] Source display formatting
+  - [ ] Error handling (vector store failures)
+  - [ ] Performance under load
 
-### Future Improvements
-- [ ] Add analytics (privacy-focused, anonymized)
-- [ ] Implement error tracking (Sentry, etc.)
-- [ ] Monitor API costs and token usage
-- [ ] Add user feedback mechanism
-- [ ] Track coaching effectiveness metrics
+- **Success Metrics**:
+  - Citations appear in ≥80% of RAG-enabled responses
+  - Citations accurately reference used documents
+  - RAG latency <3 seconds per query
+  - Zero chat failures due to RAG errors
 
----
+## Dependencies
+- `chromadb`: ^3.4.3
+- `@anthropic-ai/sdk`: ^0.88.0
+- LangSmith wrappers for Anthropic
+- OpenRouter API for embeddings
 
-## Deployment & Infrastructure
+## Date of Implementation
+April 12, 2026
 
-### Current State
-- **Development only** - running locally on localhost:3000
-- **No CI/CD** - manual deployment
-- **No staging environment** - testing in production
-- **No backup strategy** - data loss risk
-
-### Future Improvements
-- [ ] Deploy to production (Vercel, Netlify, etc.)
-- [ ] Set up CI/CD pipeline
-- [ ] Create staging environment
-- [ ] Implement database backups
-- [ ] Add uptime monitoring
-- [ ] Create disaster recovery plan
-
----
-
-## Cost Management
-
-### Current State
-- **Open API usage** - no cost controls in place
-- **No usage tracking** - can't predict monthly costs
-- **Single model tier** - may be overkill for simple queries
-
-### Future Improvements
-- [ ] Add per-user rate limits
-- [ ] Implement token usage tracking
-- [ ] Consider cheaper model for simple queries
-- [ ] Set up cost alerts and budgets
-- [ ] Optimize prompts to reduce token usage
+## Version
+1.0.0 - Initial RAG implementation
