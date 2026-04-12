@@ -6,12 +6,24 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ingest": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/ingest-pdfs.ts",
+    "ingest:one": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/ingest-pdfs.ts --max-pdfs 1",
+    "diagnose:langsmith": "tsx scripts/diagnose-langsmith.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
+    "@chroma-core/default-embed": "^0.1.9",
+    "chromadb": "^3.4.3",
+    "dotenv": "^17.4.2",
+    "langsmith": "^0.5.18",
     "next": "16.2.3",
+    "pdf-parse": "^2.4.5",
+    "pdf2json": "^4.0.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -21,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
