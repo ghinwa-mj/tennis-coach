@@ -9,6 +9,7 @@
     "lint": "eslint",
     "ingest": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/ingest-pdfs.ts",
     "ingest:one": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/ingest-pdfs.ts --max-pdfs 1",
+    "reingest": "NODE_OPTIONS='--max-old-space-size=8192' tsx scripts/reingest-with-urls.ts",
     "diagnose:langsmith": "tsx scripts/diagnose-langsmith.ts"
   },
   "dependencies": {
@@ -23,7 +24,10 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-html": "^16.0.1",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -162,11 +162,18 @@ export class VectorStore {
       return [];
     }
 
-    const searchResults: SearchResult[] = results.documents[0].map((doc: string, idx: number) => ({
-      text: doc,
-      metadata: results.metadatas![0][idx] as any,
-      score: results.distances?.[0]?.[idx],
-    }));
+    const searchResults: SearchResult[] = results.documents[0].map((doc: string, idx: number) => {
+      const metadata = results.metadatas![0][idx] as any;
+      // Debug: log the metadata to see what fields we have
+      console.log(`Retrieved chunk ${idx} metadata:`, metadata);
+      console.log(`Has URL?`, !!metadata.url, `Has article_url?`, !!metadata.article_url);
+
+      return {
+        text: doc,
+        metadata: metadata,
+        score: results.distances?.[0]?.[idx],
+      };
+    });
 
     return searchResults;
   }

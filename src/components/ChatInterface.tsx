@@ -111,7 +111,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="flex flex-col h-full bg-gradient-to-br from-green-50 to-blue-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -151,16 +151,42 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto">
           {messages.map((message, index) => (
             <div key={index}>
-              <MessageBubble role={message.role} content={message.content} />
+              <MessageBubble
+                role={message.role}
+                content={message.content}
+                sources={message.sources}
+              />
               {message.sources && message.sources.length > 0 && (
                 <div className="mt-2 mb-4 ml-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-xs font-semibold text-blue-800 mb-2">📚 Sources:</div>
+                  <div className="text-xs font-semibold text-blue-800 mb-2">📚 Relevant Literature:</div>
                   <ul className="space-y-1">
-                    {message.sources.map((source, idx) => (
-                      <li key={idx} className="text-xs text-blue-700">
-                        {idx + 1}. {source.citation}
-                      </li>
-                    ))}
+                    {message.sources.map((source, idx) => {
+                      // Extract URL from citation if present
+                      const urlMatch = source.citation.match(/-\s*(https?:\/\/[^\s]+)$/);
+                      const citationText = urlMatch
+                        ? source.citation.substring(0, urlMatch.index).trim()
+                        : source.citation;
+                      const url = urlMatch ? urlMatch[1] : source.metadata?.url;
+
+                      return (
+                        <li key={idx} className="text-xs text-blue-700">
+                          [Source {idx + 1}] {citationText}
+                          {url && (
+                            <>
+                              {' - '}
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline font-medium"
+                              >
+                                View Source
+                              </a>
+                            </>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

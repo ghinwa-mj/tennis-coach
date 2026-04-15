@@ -114,12 +114,32 @@ ${result.text}
   });
 
   ragPrompt += `**IMPORTANT CITATION REQUIREMENTS:**
-- When you use information from these documents, you MUST cite it using the format [Source X] where X is the document number
-- For example: "According to research on serve mechanics [Source 1], the toss should be..."
-- If you combine information from multiple sources, cite all of them: [Source 1][Source 3]
-- If the answer doesn't come from the documents, you can still use your general tennis knowledge
+- When you use information from these documents, you MUST cite it using EXACTLY this format: [Source X] where X is the document number
+- Citations should be subtle and unobtrusive - they're like footnotes for credibility
+- **CRITICAL RULES:**
+  * NEVER start a sentence with a citation (e.g., avoid "Source 1 recommends...")
+  * NEVER break your sentence flow with a citation (e.g., avoid "For each situation, [Source 1] you should...")
+  * Place citations AFTER the relevant information, naturally within the sentence
+  * Think of citations as little credibility markers that slip in almost unnoticed
+
+- **GOOD EXAMPLES (natural flow):**
+  * "Start with the continental grip [Source 1], then progress to an eastern grip as you improve."
+  * "Focus on these five tactical situations: serving, returning, baseline rallies, approaching the net, and passing shots [Source 1]."
+  * "The key is to practice in game-like conditions [Source 2] rather than just drilling patterns."
+  * "Give yourself choices in shot selection instead of hitting to only one spot [Source 3]."
+  * "I recommend starting with these fundamentals [Source 1][Source 2] before moving to advanced tactics."
+
+- **BAD EXAMPLES (awkward placement):**
+  * "[Source 1] You need to understand tactical principles first." ❌
+  * "For each situation, [Source 1] learn to have tactical options." ❌
+  * "Key tip: [Source 3] Give yourself choices in shot selection." ❌
+  * "Source 1 says that you should focus on X." ❌
+  * "According to research [Source 1]..." ❌
+
+- If you combine information from multiple sources, cite both: [Source 1][Source 3]
+- If the answer doesn't come from the documents, use your general tennis knowledge (no citation needed)
 - Always prioritize the retrieved documents when they provide relevant information
-- Make it clear which information comes from documents vs. your general knowledge`;
+- Keep your tone friendly and encouraging - citations should never interrupt your coaching voice`;
 
   return ragPrompt;
 }
@@ -131,14 +151,44 @@ function formatCitation(result: SearchResult, index: number): string {
   const title = result.metadata.title || result.metadata.filename;
   const authors = result.metadata.authors;
   const year = result.metadata.year;
+  const url = result.metadata.url;
 
+  let citation = '';
   if (authors && year) {
-    return `${title} (${year}) by ${authors}`;
+    citation = `${title} (${year}) by ${authors}`;
   } else if (year) {
-    return `${title} (${year})`;
+    citation = `${title} (${year})`;
   } else {
-    return title;
+    citation = title;
   }
+
+  // Add URL if available
+  if (url) {
+    citation += ` - ${url}`;
+  }
+
+  return citation;
+}
+
+/**
+ * Deduplicate documents by keeping only the first chunk from each unique document
+ * Documents are considered unique if they have different titles or filenames
+ */
+function deduplicateDocuments(docs: SearchResult[]): SearchResult[] {
+  const seen = new Set<string>();
+  const unique: SearchResult[] = [];
+
+  for (const doc of docs) {
+    // Use title as unique identifier, fallback to filename
+    const identifier = doc.metadata.title || doc.metadata.filename;
+
+    if (!seen.has(identifier)) {
+      seen.add(identifier);
+      unique.push(doc);
+    }
+  }
+
+  return unique;
 }
 
 export async function POST(request: NextRequest) {
@@ -166,15 +216,18 @@ export async function POST(request: NextRequest) {
 
         const latestQuestion = latestUserQuestionText(messages);
         if (latestQuestion) {
-          // Retrieve top 5 most relevant documents
-          retrievedDocs = await vectorStore.search(latestQuestion, 5);
+          // Retrieve top 10 most relevant documents
+          retrievedDocs = await vectorStore.search(latestQuestion, 10);
 
-          // Build RAG-augmented prompt
-          if (retrievedDocs.length > 0) {
-            systemPrompt = buildRAGPrompt(systemPrompt, retrievedDocs);
+          // Deduplicate: keep only the first chunk from each document (by title)
+          const uniqueDocs = deduplicateDocuments(retrievedDocs);
 
-            // Prepare sources for response
-            sources = retrievedDocs.map((doc, index) => ({
+          // Build RAG-augmented prompt with unique documents
+          if (uniqueDocs.length > 0) {
+            systemPrompt = buildRAGPrompt(systemPrompt, uniqueDocs);
+
+            // Prepare sources for response (deduplicated)
+            sources = uniqueDocs.map((doc, index) => ({
               citation: formatCitation(doc, index + 1),
               metadata: doc.metadata,
             }));

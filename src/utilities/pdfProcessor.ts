@@ -180,7 +180,7 @@ export class PDFProcessor {
       title: metadata?.title,
       authors: metadata?.authors,
       year: metadata?.year,
-      url: metadata?.url,
+      url: metadata?.url || metadata?.article_url || metadata?.pdf_url,
       abstract: metadata?.abstract,
     };
 
