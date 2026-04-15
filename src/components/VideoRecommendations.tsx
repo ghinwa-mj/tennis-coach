@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { storage } from '@/lib/storage';
-import { UserProfile } from '@/types/user';
+import { UserProfile, defaultUserProfile } from '@/types/user';
 import { YouTubeVideo } from '@/lib/youtube/types';
 import VideoCard from './VideoCard';
 import EmbeddedPlayer from './EmbeddedPlayer';
+import ProfileModal from './ProfileModal';
+import OnboardingModal from './OnboardingModal';
 
 type LoadingState = 'idle' | 'loading' | 'error' | 'no-persona' | 'success';
 
-interface VideoRecommendationsProps {
-  onSwitchToChat?: () => void;
-}
-
-export default function VideoRecommendations({ onSwitchToChat }: VideoRecommendationsProps) {
+export default function VideoRecommendations() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
@@ -23,6 +21,8 @@ export default function VideoRecommendations({ onSwitchToChat }: VideoRecommenda
   const [showCustomSearch, setShowCustomSearch] = useState(false);
   const [customQuery, setCustomQuery] = useState('');
   const [isCustomSearch, setIsCustomSearch] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
   // Load user profile on mount
   useEffect(() => {
@@ -116,13 +116,6 @@ export default function VideoRecommendations({ onSwitchToChat }: VideoRecommenda
     setSelectedVideo(null);
   };
 
-  const handleGoToProfile = () => {
-    // Switch to chat tab where profile button is accessible
-    if (onSwitchToChat) {
-      onSwitchToChat();
-    }
-  };
-
   const handleCustomSearch = () => {
     setShowCustomSearch(true);
     setCustomQuery('');
@@ -140,39 +133,128 @@ export default function VideoRecommendations({ onSwitchToChat }: VideoRecommenda
     setCustomQuery('');
   };
 
+  const handleOpenProfile = () => {
+    console.log('Opening profile modal...');
+    console.log('userProfile:', userProfile);
+    console.log('skillLevel:', userProfile?.skillLevel);
+    console.log('hasCompletedOnboarding:', userProfile?.hasCompletedOnboarding);
+
+    // If user has no profile or hasn't completed onboarding, show onboarding
+    const needsOnboarding = !userProfile?.skillLevel || userProfile?.hasCompletedOnboarding === false;
+    console.log('needsOnboarding:', needsOnboarding);
+
+    if (needsOnboarding) {
+      console.log('Showing OnboardingModal');
+      setShowOnboardingModal(true);
+    } else {
+      console.log('Showing ProfileModal');
+      setShowProfileModal(true);
+    }
+  };
+
+  const handleOnboardingComplete = (profile: UserProfile) => {
+    console.log('Onboarding completed:', profile);
+    setUserProfile(profile);
+    setShowOnboardingModal(false);
+    storage.saveUserProfile(profile);
+    // Load recommendations after onboarding
+    loadRecommendations();
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboardingModal(false);
+  };
+
+  const handleProfileUpdate = (updatedProfile: UserProfile) => {
+    setUserProfile(updatedProfile);
+    setShowProfileModal(false);
+    // Reload recommendations after profile update
+    if (updatedProfile.skillLevel) {
+      loadRecommendations();
+    }
+  };
+
+  const handleProfileClear = () => {
+    setUserProfile(defaultUserProfile);
+    setShowProfileModal(false);
+    setLoadingState('no-persona');
+  };
+
   // Loading state
   if (loadingState === 'loading') {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mb-4"></div>
-          <p className="text-gray-600">Finding the best videos for you...</p>
+      <>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mb-4"></div>
+            <p className="text-gray-600">Finding the best videos for you...</p>
+          </div>
         </div>
-      </div>
+        {/* Modals */}
+        {showProfileModal && (
+          <div className="fixed inset-0 z-[100]">
+            <ProfileModal
+              profile={userProfile || defaultUserProfile}
+              onClose={() => setShowProfileModal(false)}
+              onUpdate={handleProfileUpdate}
+              onClear={handleProfileClear}
+            />
+          </div>
+        )}
+        {showOnboardingModal && (
+          <div className="fixed inset-0 z-[100]">
+            <OnboardingModal
+              onComplete={handleOnboardingComplete}
+              onSkip={handleOnboardingSkip}
+            />
+          </div>
+        )}
+      </>
     );
   }
 
   // No persona state
   if (loadingState === 'no-persona') {
     return (
-      <div className="flex items-center justify-center h-full p-8">
-        <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">👤</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Complete Your Profile
-          </h2>
-          <p className="text-gray-600 mb-6">{errorMessage}</p>
-          <button
-            onClick={handleGoToProfile}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
-          >
-            Go to Chat & Set Up Profile
-          </button>
-          <p className="text-sm text-gray-500 mt-4">
-            Then click the "👤 Profile" button in the top right corner
-          </p>
+      <>
+        <div className="flex items-center justify-center h-full p-8">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">👤</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Complete Your Profile
+            </h2>
+            <p className="text-gray-600 mb-6">{errorMessage}</p>
+            <button
+              onClick={handleOpenProfile}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors mb-3"
+            >
+              Set Up My Profile
+            </button>
+            <p className="text-sm text-gray-500">
+              Tell us about your tennis game so we can recommend the best videos for you!
+            </p>
+          </div>
         </div>
-      </div>
+        {/* Modals */}
+        {showProfileModal && (
+          <div className="fixed inset-0 z-[100]">
+            <ProfileModal
+              profile={userProfile || defaultUserProfile}
+              onClose={() => setShowProfileModal(false)}
+              onUpdate={handleProfileUpdate}
+              onClear={handleProfileClear}
+            />
+          </div>
+        )}
+        {showOnboardingModal && (
+          <div className="fixed inset-0 z-[100]">
+            <OnboardingModal
+              onComplete={handleOnboardingComplete}
+              onSkip={handleOnboardingSkip}
+            />
+          </div>
+        )}
+      </>
     );
   }
 
@@ -212,6 +294,13 @@ export default function VideoRecommendations({ onSwitchToChat }: VideoRecommenda
             )}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleOpenProfile}
+              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2"
+            >
+              <span>👤</span>
+              <span>Update Profile</span>
+            </button>
             <button
               onClick={handleCustomSearch}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2"
@@ -302,6 +391,28 @@ export default function VideoRecommendations({ onSwitchToChat }: VideoRecommenda
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-[100]">
+          <ProfileModal
+            profile={userProfile || defaultUserProfile}
+            onClose={() => setShowProfileModal(false)}
+            onUpdate={handleProfileUpdate}
+            onClear={handleProfileClear}
+          />
+        </div>
+      )}
+
+      {/* Onboarding Modal */}
+      {showOnboardingModal && (
+        <div className="fixed inset-0 z-[100]">
+          <OnboardingModal
+            onComplete={handleOnboardingComplete}
+            onSkip={handleOnboardingSkip}
+          />
         </div>
       )}
     </div>
