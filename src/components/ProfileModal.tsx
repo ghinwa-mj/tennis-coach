@@ -80,7 +80,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                   value={editedProfile.name || ''}
                   onChange={(e) => updateField('name', e.target.value)}
                   placeholder="Your name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
                 />
               </div>
 
@@ -91,7 +91,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                 <select
                   value={editedProfile.skillLevel}
                   onChange={(e) => updateField('skillLevel', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
                 >
                   {(Object.keys(skillLevelLabels) as Array<keyof typeof skillLevelLabels>).map((level) => (
                     <option key={level} value={level}>
@@ -112,7 +112,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                   placeholder="Number of years"
                   min="0"
                   max="50"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
                 />
               </div>
 
@@ -123,7 +123,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                 <select
                   value={editedProfile.playingStyle || ''}
                   onChange={(e) => updateField('playingStyle', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
                 >
                   <option value="">Select your style...</option>
                   {(Object.keys(playingStyleLabels) as Array<keyof typeof playingStyleLabels>).map((style) => (
@@ -144,8 +144,8 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                       key={goal}
                       className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         editedProfile.goals?.includes(goal)
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-green-300'
+                          ? 'border-wimbledon-500 bg-wimbledon-50'
+                          : 'border-gray-200 hover:border-wimbledon-100'
                       }`}
                     >
                       <input
@@ -179,8 +179,8 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                       key={area}
                       className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         editedProfile.focusAreas?.includes(area)
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-green-300'
+                          ? 'border-wimbledon-500 bg-wimbledon-50'
+                          : 'border-gray-200 hover:border-wimbledon-100'
                       }`}
                     >
                       <input
@@ -236,7 +236,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                       {profile.goals.map((goal) => (
                         <span
                           key={goal}
-                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+                          className="px-3 py-1 bg-wimbledon-100 text-wimbledon-600 rounded-full text-sm font-medium"
                         >
                           {goalLabels[goal]}
                         </span>
@@ -293,7 +293,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+                  className="px-6 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium"
                 >
                   Save Changes
                 </button>
@@ -301,7 +301,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
             ) : (
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+                className="px-6 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium"
               >
                 Edit Profile
               </button>

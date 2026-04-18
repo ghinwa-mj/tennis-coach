@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import MessageBubble from './MessageBubble';
+import { Trophy, BookOpen, User } from 'lucide-react';
+import TicketMessageBubble from './TicketMessageBubble';
 import OnboardingModal from './OnboardingModal';
 import ProfileModal from './ProfileModal';
 import { UserProfile, defaultUserProfile } from '@/types/user';
@@ -11,6 +12,8 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   sources?: Array<{ citation: string; metadata: any }>;
+  serialNumber?: string;
+  timestamp?: string;
 }
 
 export default function ChatInterface() {
@@ -27,8 +30,15 @@ export default function ChatInterface() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageCounter, setMessageCounter] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const threadIdRef = useRef(crypto.randomUUID());
+
+  // Generate serial number for messages
+  const generateSerialNumber = () => {
+    const num = messageCounter + 1;
+    return `MSG-${String(num).padStart(3, '0')}`;
+  };
 
   // Load user profile and RAG setting on mount
   useEffect(() => {
@@ -57,8 +67,14 @@ export default function ChatInterface() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = {
+      role: 'user',
+      content: input,
+      serialNumber: generateSerialNumber(),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    };
     setMessages((prev) => [...prev, userMessage]);
+    setMessageCounter(prev => prev + 1);
     setInput('');
     setIsLoading(true);
 
@@ -77,7 +93,13 @@ export default function ChatInterface() {
       if (!response.ok) throw new Error('Failed to get response');
 
       const data = await response.json();
-      setMessages((prev) => [...prev, data]);
+      const assistantMessage: Message = {
+        ...data,
+        serialNumber: generateSerialNumber(),
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setMessageCounter(prev => prev + 1);
     } catch (error) {
       console.error('Error:', error);
       setMessages((prev) => [
@@ -111,36 +133,38 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="flex flex-col h-full bg-clay-100">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+      <header className="bg-white border-b border-clay-200 px-6 py-4 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xl">🎾</span>
+            <div className="w-10 h-10 bg-clay-300 rounded-lg flex items-center justify-center shadow-md">
+              <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">TennisCoach AI</h1>
-              <p className="text-sm text-gray-500">Your personal tennis coach</p>
+              <h1 className="text-xl font-heading font-bold text-navy-900">TennisCoach AI</h1>
+              <p className="text-sm text-navy-50">Your personal tennis coach</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleRagToggle}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                 ragEnabled
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-wimbledon-500 text-white hover:bg-wimbledon-600 shadow-sm'
+                  : 'bg-clay-100 text-navy-900 hover:bg-clay-200'
               }`}
               title={ragEnabled ? 'RAG enabled - Using knowledge base' : 'RAG disabled - Using general knowledge'}
             >
-              📚 {ragEnabled ? 'RAG On' : 'RAG Off'}
+              <BookOpen className="w-4 h-4" />
+              {ragEnabled ? 'RAG On' : 'RAG Off'}
             </button>
             <button
               onClick={() => setShowProfile(true)}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+              className="px-4 py-2 bg-clay-100 hover:bg-clay-200 rounded-lg text-sm font-medium text-navy-900 transition-colors flex items-center gap-2"
             >
-              👤 Profile
+              <User className="w-4 h-4" />
+              Profile
             </button>
           </div>
         </div>
@@ -151,54 +175,22 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto">
           {messages.map((message, index) => (
             <div key={index}>
-              <MessageBubble
+              <TicketMessageBubble
                 role={message.role}
                 content={message.content}
                 sources={message.sources}
+                serialNumber={message.serialNumber}
+                timestamp={message.timestamp}
               />
-              {message.sources && message.sources.length > 0 && (
-                <div className="mt-2 mb-4 ml-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-xs font-semibold text-blue-800 mb-2">📚 Relevant Literature:</div>
-                  <ul className="space-y-1">
-                    {message.sources.map((source, idx) => {
-                      // Extract URL from citation if present
-                      const urlMatch = source.citation.match(/-\s*(https?:\/\/[^\s]+)$/);
-                      const citationText = urlMatch
-                        ? source.citation.substring(0, urlMatch.index).trim()
-                        : source.citation;
-                      const url = urlMatch ? urlMatch[1] : source.metadata?.url;
-
-                      return (
-                        <li key={idx} className="text-xs text-blue-700">
-                          [Source {idx + 1}] {citationText}
-                          {url && (
-                            <>
-                              {' - '}
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 underline font-medium"
-                              >
-                                View Source
-                              </a>
-                            </>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
             </div>
           ))}
           {isLoading && (
             <div className="flex justify-start mb-4">
-              <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-4 py-3">
+              <div className="bg-ausopen-50 rounded-lg px-4 py-3 border-l-4 border-ausopen-500 shadow-sm">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce delay-100" />
+                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce delay-200" />
                 </div>
               </div>
             </div>
@@ -208,20 +200,20 @@ export default function ChatInterface() {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-200 px-4 py-4">
+      <div className="bg-white border-t border-clay-200 px-4 py-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask me anything about tennis..."
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="flex-1 px-4 py-3 border border-clay-200 rounded-full focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent bg-clay-50 text-navy-900 placeholder:text-navy-50"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-6 py-3 bg-green-500 text-white rounded-full font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-clay-300 text-white rounded-full font-medium hover:bg-clay-400 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             Send
           </button>

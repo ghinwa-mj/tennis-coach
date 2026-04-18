@@ -76,7 +76,7 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                 value={profile.name || ''}
                 onChange={(e) => updateProfile({ name: e.target.value })}
                 placeholder="Enter your name (optional)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
               />
             </div>
 
@@ -91,8 +91,8 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                     onClick={() => updateProfile({ skillLevel: level })}
                     className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
                       profile.skillLevel === level
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+                        ? 'border-wimbledon-500 bg-wimbledon-50'
+                        : 'border-gray-200 hover:border-wimbledon-100'
                     }`}
                   >
                     <div className="font-medium">{skillLevelLabels[level]}</div>
@@ -112,7 +112,7 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                 placeholder="Number of years"
                 min="0"
                 max="50"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
               />
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
               <select
                 value={profile.playingStyle || ''}
                 onChange={(e) => updateProfile({ playingStyle: e.target.value as any })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
               >
                 <option value="">Select your style...</option>
                 {(Object.keys(playingStyleLabels) as Array<keyof typeof playingStyleLabels>).map((style) => (
@@ -149,8 +149,8 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                     key={goal}
                     className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                       profile.goals?.includes(goal)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+                        ? 'border-wimbledon-500 bg-wimbledon-50'
+                        : 'border-gray-200 hover:border-wimbledon-100'
                     }`}
                   >
                     <input
@@ -196,8 +196,8 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                     key={area}
                     className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                       profile.focusAreas?.includes(area)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+                        ? 'border-wimbledon-500 bg-wimbledon-50'
+                        : 'border-gray-200 hover:border-wimbledon-100'
                     }`}
                   >
                     <input
@@ -230,7 +230,7 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                 }
                 placeholder="e.g., Tennis elbow, knee problems"
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
               />
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
             )}
             <button
               onClick={handleNext}
-              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+              className="px-6 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium"
             >
               {step === 3 ? 'Get Started' : 'Next'}
             </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { User, Search, RefreshCw, AlertTriangle } from 'lucide-react';
 import { storage } from '@/lib/storage';
 import { UserProfile, defaultUserProfile } from '@/types/user';
 import { YouTubeVideo } from '@/lib/youtube/types';
@@ -186,8 +187,8 @@ export default function VideoRecommendations() {
       <>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mb-4"></div>
-            <p className="text-gray-600">Finding the best videos for you...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-clay-400 mb-4"></div>
+            <p className="text-navy-50">Finding the best videos for you...</p>
           </div>
         </div>
         {/* Modals */}
@@ -219,18 +220,20 @@ export default function VideoRecommendations() {
       <>
         <div className="flex items-center justify-center h-full p-8">
           <div className="text-center max-w-md">
-            <div className="text-6xl mb-4">👤</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <div className="w-20 h-20 bg-clay-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-10 h-10 text-clay-400" />
+            </div>
+            <h2 className="text-2xl font-heading font-bold text-navy-900 mb-4">
               Complete Your Profile
             </h2>
-            <p className="text-gray-600 mb-6">{errorMessage}</p>
+            <p className="text-navy-50 mb-6">{errorMessage}</p>
             <button
               onClick={handleOpenProfile}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors mb-3"
+              className="px-6 py-3 bg-clay-300 text-white rounded-lg font-medium hover:bg-clay-400 transition-colors mb-3 shadow-sm"
             >
               Set Up My Profile
             </button>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-navy-50">
               Tell us about your tennis game so we can recommend the best videos for you!
             </p>
           </div>
@@ -263,14 +266,16 @@ export default function VideoRecommendations() {
     return (
       <div className="flex items-center justify-center h-full p-8">
         <div className="text-center max-w-md">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-heading font-bold text-navy-900 mb-4">
             Oops! Something went wrong
           </h2>
-          <p className="text-gray-600 mb-6">{errorMessage}</p>
+          <p className="text-navy-50 mb-6">{errorMessage}</p>
           <button
             onClick={handleRefresh}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+            className="px-6 py-3 bg-clay-300 text-white rounded-lg font-medium hover:bg-clay-400 transition-colors shadow-sm"
           >
             Try Again
           </button>
@@ -286,33 +291,33 @@ export default function VideoRecommendations() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <h2 className="text-2xl font-heading font-bold text-navy-900 mb-2">
               Personalized Video Recommendations
             </h2>
             {reasoning && (
-              <p className="text-gray-600 text-sm">{reasoning}</p>
+              <p className="text-navy-50 text-sm">{reasoning}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleOpenProfile}
-              className="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-clay-300 hover:bg-clay-400 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2 shadow-sm"
             >
-              <span>👤</span>
+              <User className="w-4 h-4" />
               <span>Update Profile</span>
             </button>
             <button
               onClick={handleCustomSearch}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-wimbledon-500 hover:bg-wimbledon-600 rounded-lg text-sm font-medium text-white transition-colors flex items-center gap-2 shadow-sm"
             >
-              <span>🔍</span>
+              <Search className="w-4 h-4" />
               <span>Custom Search</span>
             </button>
             <button
               onClick={handleRefresh}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-clay-100 hover:bg-clay-200 rounded-lg text-sm font-medium text-navy-900 transition-colors flex items-center gap-2"
             >
-              <span>🔄</span>
+              <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
             </button>
           </div>
@@ -332,16 +337,18 @@ export default function VideoRecommendations() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          <div className="w-20 h-20 bg-clay-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-10 h-10 text-clay-400" />
+          </div>
+          <h3 className="text-xl font-heading font-semibold text-navy-900 mb-2">
             No videos found
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-navy-50 mb-6">
             We couldn't find any videos matching your profile. Try refreshing to get different recommendations.
           </p>
           <button
             onClick={handleRefresh}
-            className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+            className="px-6 py-3 bg-clay-300 text-white rounded-lg font-medium hover:bg-clay-400 transition-colors shadow-sm"
           >
             Refresh Recommendations
           </button>
@@ -360,32 +367,32 @@ export default function VideoRecommendations() {
       {/* Custom Search Modal */}
       {showCustomSearch && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl">
+            <h3 className="text-xl font-heading font-bold text-navy-900 mb-4">
               What would you like to learn?
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-navy-50 mb-4">
               Describe what you're looking for and I'll find the perfect tennis videos for you!
             </p>
             <textarea
               value={customQuery}
               onChange={(e) => setCustomQuery(e.target.value)}
               placeholder="e.g., How to improve my backhand slice, Serving tips for beginners, Footwork drills for doubles..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent resize-none bg-clay-50 text-navy-900 placeholder:text-navy-50"
               rows={4}
               autoFocus
             />
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={handleCustomSearchCancel}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 font-medium transition-colors"
+                className="px-4 py-2 bg-clay-100 hover:bg-clay-200 rounded-lg text-navy-900 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCustomSearchSubmit}
                 disabled={!customQuery.trim()}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors"
+                className="px-4 py-2 bg-wimbledon-500 hover:bg-wimbledon-600 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors shadow-sm"
               >
                 Search Videos
               </button>
