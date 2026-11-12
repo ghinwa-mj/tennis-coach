@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -22,11 +23,20 @@ export default function TicketMessageBubble({
 }: TicketMessageBubbleProps) {
   const isUser = role === 'user';
 
-  // Generate timestamp if not provided
-  const displayTimestamp = timestamp || new Date().toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  // Avoid SSR/client locale clock mismatch (triggers Next.js hydration overlay that steals taps).
+  const [displayTimestamp, setDisplayTimestamp] = useState(timestamp || '');
+  useEffect(() => {
+    if (timestamp) {
+      setDisplayTimestamp(timestamp);
+      return;
+    }
+    setDisplayTimestamp(
+      new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    );
+  }, [timestamp]);
 
   // Preprocess content to replace [Source X] with markdown links
   const preprocessContent = (text: string): string => {
@@ -62,10 +72,10 @@ export default function TicketMessageBubble({
     : content;
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 sm:mb-6`}>
       <div
         className={`
-          relative max-w-[85%] p-6 rounded-md shadow-md
+          relative max-w-[92%] sm:max-w-[85%] p-4 sm:p-6 rounded-md shadow-md
           transition-all duration-200 border-2
           ${
             isUser

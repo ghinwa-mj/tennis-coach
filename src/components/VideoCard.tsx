@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { Eye, Calendar, Play } from 'lucide-react';
 import { YouTubeVideo } from '@/lib/youtube/types';
 
 interface VideoCardProps {
@@ -10,68 +10,61 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, onClick }: VideoCardProps) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-clay-200"
+      className="
+        w-full text-left bg-white rounded-lg shadow-md overflow-hidden
+        transition-all duration-300 border border-clay-200
+        hover:scale-[1.02] hover:shadow-xl
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay-400
+      "
     >
-      {/* Thumbnail with artistic overlay */}
+      {/* Thumbnail */}
       <div className="relative group">
         <img
           src={video.thumbnail}
-          alt={video.title}
-          className="w-full h-52 object-cover transition-transform duration-300 group-hover:scale-105"
+          alt=""
+          className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
-        {/* Artistic gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
 
-        {/* Chapter markers */}
-        <div className="absolute bottom-2 left-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-1.5 h-1.5 bg-white rounded-full shadow-md" />
-          <div className="w-1.5 h-1.5 bg-white/70 rounded-full shadow-md" />
-          <div className="w-1.5 h-1.5 bg-white/70 rounded-full shadow-md" />
-          <div className="w-1.5 h-1.5 bg-white/70 rounded-full shadow-md" />
+        {/* Always-visible play cue (hover alone fails on touch) */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
+            <Play className="w-5 h-5 text-clay-400 fill-clay-400 ml-0.5" aria-hidden="true" />
+          </div>
         </div>
 
-        {/* Duration badge */}
         {video.duration && (
           <div className="absolute bottom-2 right-2 bg-clay-400 text-white text-xs px-2 py-1 rounded font-medium shadow-md">
             {video.duration}
           </div>
         )}
-
-        {/* Play button overlay on hover */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-clay-400 text-xl">▶</span>
-          </div>
-        </div>
       </div>
 
       {/* Video Info */}
-      <div className="p-4">
-        <h3 className="font-heading font-semibold text-base text-navy-900 line-clamp-2 mb-3">
+      <div className="p-3 sm:p-4">
+        <h3 className="font-heading font-semibold text-sm sm:text-base text-navy-900 line-clamp-2 mb-2 sm:mb-3">
           {video.title}
         </h3>
 
-        <div className="space-y-2">
-          <p className="text-sm text-navy-50 flex items-center gap-1">
-            <span>📺</span>
-            <span className="truncate">{video.channel}</span>
-          </p>
+        <div className="space-y-1.5">
+          <p className="text-xs sm:text-sm text-navy-50 truncate">{video.channel}</p>
 
-          <div className="flex items-center gap-3 text-sm text-navy-50">
-            <span className="flex items-center gap-1">
-              <span>👁️</span>
-              <span>{video.views}</span>
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-navy-50">
+            <span className="inline-flex items-center gap-1 min-w-0">
+              <Eye className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{video.views}</span>
             </span>
-            <span className="flex items-center gap-1">
-              <span>📅</span>
-              <span>{video.publishDate}</span>
+            <span className="inline-flex items-center gap-1 min-w-0">
+              <Calendar className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{video.publishDate}</span>
             </span>
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

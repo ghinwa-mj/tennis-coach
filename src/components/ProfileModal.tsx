@@ -9,16 +9,25 @@ interface ProfileModalProps {
   onClose: () => void;
   onUpdate: (profile: UserProfile) => void;
   onClear: () => void;
+  /** Open directly in the edit form (e.g. Videos → Update Profile). */
+  startInEditMode?: boolean;
 }
 
-export default function ProfileModal({ profile, onClose, onUpdate, onClear }: ProfileModalProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export default function ProfileModal({
+  profile,
+  onClose,
+  onUpdate,
+  onClear,
+  startInEditMode = false,
+}: ProfileModalProps) {
+  const [isEditing, setIsEditing] = useState(startInEditMode);
   const [editedProfile, setEditedProfile] = useState(profile);
 
   const handleSave = () => {
     storage.saveUserProfile(editedProfile);
     onUpdate(editedProfile);
     setIsEditing(false);
+    onClose();
   };
 
   const handleCancel = () => {
@@ -51,60 +60,81 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {isEditing ? 'Edit Profile' : 'Your Profile'} 👤
+    <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      {/*
+        Always use a definite height so the middle grid row can scroll and the
+        footer (Save) is never clipped by overflow:hidden + h-auto.
+      */}
+      <div
+        className="
+          bg-white w-full sm:max-w-lg
+          rounded-t-2xl sm:rounded-2xl
+          h-[85dvh] max-h-[85dvh]
+          flex flex-col
+          overflow-hidden shadow-xl
+        "
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-modal-title"
+      >
+        <div className="shrink-0 px-4 py-3 sm:px-6 sm:py-4 border-b border-clay-200 flex justify-between items-center gap-3">
+          <h2 id="profile-modal-title" className="text-xl sm:text-2xl font-heading font-bold text-navy-900">
+            {isEditing ? 'Edit Profile' : 'Your Profile'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2">
+            {isEditing && (
+              <button
+                type="button"
+                onClick={handleSave}
+                className="px-3 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium text-sm shadow-sm"
+              >
+                Save
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 -mr-1 rounded-lg text-navy-50 hover:bg-clay-100 hover:text-navy-900 text-2xl leading-none"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 space-y-4">
           {isEditing ? (
             <>
-              {/* Edit Mode */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Name</label>
                 <input
                   type="text"
                   value={editedProfile.name || ''}
                   onChange={(e) => updateField('name', e.target.value)}
                   placeholder="Your name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
+                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Skill Level
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Skill Level</label>
                 <select
                   value={editedProfile.skillLevel}
                   onChange={(e) => updateField('skillLevel', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
+                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
                 >
-                  {(Object.keys(skillLevelLabels) as Array<keyof typeof skillLevelLabels>).map((level) => (
-                    <option key={level} value={level}>
-                      {skillLevelLabels[level]}
-                    </option>
-                  ))}
+                  {(Object.keys(skillLevelLabels) as Array<keyof typeof skillLevelLabels>).map(
+                    (level) => (
+                      <option key={level} value={level}>
+                        {skillLevelLabels[level]}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Years Playing
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Years Playing</label>
                 <input
                   type="number"
                   value={editedProfile.yearsPlaying || ''}
@@ -112,32 +142,30 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                   placeholder="Number of years"
                   min="0"
                   max="50"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
+                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Playing Style
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Playing Style</label>
                 <select
                   value={editedProfile.playingStyle || ''}
                   onChange={(e) => updateField('playingStyle', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500"
+                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
                 >
                   <option value="">Select your style...</option>
-                  {(Object.keys(playingStyleLabels) as Array<keyof typeof playingStyleLabels>).map((style) => (
-                    <option key={style} value={style}>
-                      {playingStyleLabels[style]}
-                    </option>
-                  ))}
+                  {(Object.keys(playingStyleLabels) as Array<keyof typeof playingStyleLabels>).map(
+                    (style) => (
+                      <option key={style} value={style}>
+                        {playingStyleLabels[style]}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Goals
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Goals</label>
                 <div className="space-y-2">
                   {(Object.keys(goalLabels) as Array<keyof typeof goalLabels>).map((goal) => (
                     <label
@@ -145,7 +173,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                       className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         editedProfile.goals?.includes(goal)
                           ? 'border-wimbledon-500 bg-wimbledon-50'
-                          : 'border-gray-200 hover:border-wimbledon-100'
+                          : 'border-clay-200'
                       }`}
                     >
                       <input
@@ -161,9 +189,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Focus Areas
-                </label>
+                <label className="block text-sm font-medium text-navy-900 mb-2">Focus Areas</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     'Forehand',
@@ -180,7 +206,7 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
                       className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                         editedProfile.focusAreas?.includes(area)
                           ? 'border-wimbledon-500 bg-wimbledon-50'
-                          : 'border-gray-200 hover:border-wimbledon-100'
+                          : 'border-clay-200'
                       }`}
                     >
                       <input
@@ -196,117 +222,135 @@ export default function ProfileModal({ profile, onClose, onUpdate, onClear }: Pr
               </div>
             </>
           ) : (
-            <>
-              {/* View Mode */}
-              <div className="space-y-4">
-                {profile.name && (
-                  <div>
-                    <div className="text-sm text-gray-500">Name</div>
-                    <div className="text-lg font-medium text-gray-800">{profile.name}</div>
-                  </div>
-                )}
-
+            <div className="space-y-4">
+              {profile.name && (
                 <div>
-                  <div className="text-sm text-gray-500">Skill Level</div>
-                  <div className="text-lg font-medium text-gray-800">
-                    {profile.skillLevel ? skillLevelLabels[profile.skillLevel] : 'Not set'}
+                  <div className="text-sm text-navy-50">Name</div>
+                  <div className="text-lg font-medium text-navy-900">{profile.name}</div>
+                </div>
+              )}
+
+              <div>
+                <div className="text-sm text-navy-50">Skill Level</div>
+                <div className="text-lg font-medium text-navy-900">
+                  {profile.skillLevel ? skillLevelLabels[profile.skillLevel] : 'Not set'}
+                </div>
+              </div>
+
+              {profile.yearsPlaying !== undefined && (
+                <div>
+                  <div className="text-sm text-navy-50">Years Playing</div>
+                  <div className="text-lg font-medium text-navy-900">
+                    {profile.yearsPlaying} years
                   </div>
                 </div>
+              )}
 
-                {profile.yearsPlaying !== undefined && (
-                  <div>
-                    <div className="text-sm text-gray-500">Years Playing</div>
-                    <div className="text-lg font-medium text-gray-800">{profile.yearsPlaying} years</div>
+              {profile.playingStyle && (
+                <div>
+                  <div className="text-sm text-navy-50">Playing Style</div>
+                  <div className="text-lg font-medium text-navy-900">
+                    {playingStyleLabels[profile.playingStyle]}
                   </div>
-                )}
+                </div>
+              )}
 
-                {profile.playingStyle && (
-                  <div>
-                    <div className="text-sm text-gray-500">Playing Style</div>
-                    <div className="text-lg font-medium text-gray-800">
-                      {playingStyleLabels[profile.playingStyle]}
-                    </div>
+              {profile.goals && profile.goals.length > 0 && (
+                <div>
+                  <div className="text-sm text-navy-50 mb-2">Goals</div>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.goals.map((goal) => (
+                      <span
+                        key={goal}
+                        className="px-3 py-1 bg-wimbledon-100 text-wimbledon-600 rounded-full text-sm font-medium"
+                      >
+                        {goalLabels[goal]}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {profile.goals && profile.goals.length > 0 && (
-                  <div>
-                    <div className="text-sm text-gray-500 mb-2">Goals</div>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.goals.map((goal) => (
-                        <span
-                          key={goal}
-                          className="px-3 py-1 bg-wimbledon-100 text-wimbledon-600 rounded-full text-sm font-medium"
-                        >
-                          {goalLabels[goal]}
-                        </span>
-                      ))}
-                    </div>
+              {profile.focusAreas && profile.focusAreas.length > 0 && (
+                <div>
+                  <div className="text-sm text-navy-50 mb-2">Focus Areas</div>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.focusAreas.map((area) => (
+                      <span
+                        key={area}
+                        className="px-3 py-1 bg-ausopen-100 text-ausopen-600 rounded-full text-sm font-medium"
+                      >
+                        {area}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {profile.focusAreas && profile.focusAreas.length > 0 && (
-                  <div>
-                    <div className="text-sm text-gray-500 mb-2">Focus Areas</div>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.focusAreas.map((area) => (
-                        <span
-                          key={area}
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
-                        >
-                          {area}
-                        </span>
-                      ))}
-                    </div>
+              {profile.injuries && profile.injuries.length > 0 && (
+                <div>
+                  <div className="text-sm text-navy-50">Physical Considerations</div>
+                  <div className="text-lg font-medium text-navy-900">
+                    {profile.injuries.join(', ')}
                   </div>
-                )}
-
-                {profile.injuries && profile.injuries.length > 0 && (
-                  <div>
-                    <div className="text-sm text-gray-500">Physical Considerations</div>
-                    <div className="text-lg font-medium text-gray-800">
-                      {profile.injuries.join(', ')}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200 flex justify-between">
-          <button
-            onClick={onClear}
-            className="px-6 py-2 text-red-600 hover:text-red-800 font-medium"
-          >
-            Clear Profile
-          </button>
-          <div className="flex gap-3">
-            {isEditing ? (
-              <>
+        <div
+          className="
+            shrink-0 border-t border-clay-200 bg-white
+            px-4 pt-3 sm:px-6
+            pb-[max(0.75rem,env(safe-area-inset-bottom))]
+            space-y-2
+          "
+        >
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="w-full px-4 py-3 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium text-base shadow-sm"
+              >
+                Save Changes
+              </button>
+              <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={handleCancel}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                  className="flex-1 px-4 py-2.5 border border-clay-200 rounded-lg hover:bg-clay-50 font-medium text-sm"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium"
+                  type="button"
+                  onClick={onClear}
+                  className="flex-1 px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm"
                 >
-                  Save Changes
+                  Clear Profile
                 </button>
-              </>
-            ) : (
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-2">
               <button
+                type="button"
+                onClick={onClear}
+                className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg font-medium text-sm"
+              >
+                Clear Profile
+              </button>
+              <button
+                type="button"
                 onClick={() => setIsEditing(true)}
-                className="px-6 py-2 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium"
+                className="flex-1 px-4 py-3 bg-wimbledon-500 text-white rounded-lg hover:bg-wimbledon-600 font-medium text-base shadow-sm"
               >
                 Edit Profile
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

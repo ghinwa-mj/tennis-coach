@@ -8,6 +8,7 @@ import OnboardingModal from './OnboardingModal';
 import ProfileModal from './ProfileModal';
 import { UserProfile, defaultUserProfile } from '@/types/user';
 import { storage } from '@/lib/storage';
+import { createClientId } from '@/lib/id';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -44,7 +45,7 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [messageCounter, setMessageCounter] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const threadIdRef = useRef(crypto.randomUUID());
+  const threadIdRef = useRef(createClientId());
 
   // Generate serial number for messages
   const generateSerialNumber = () => {
@@ -159,23 +160,25 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-clay-100">
+    <div className="flex flex-col h-full min-h-0 bg-clay-100">
       {/* Header */}
-      <header className="bg-white border-b border-clay-200 px-6 py-4 shadow-sm">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-clay-300 rounded-lg flex items-center justify-center shadow-md">
-              <Trophy className="w-6 h-6 text-white" />
+      <header className="bg-white border-b border-clay-200 px-3 py-3 sm:px-6 sm:py-4 shadow-sm shrink-0">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-clay-300 rounded-lg flex items-center justify-center shadow-md shrink-0">
+              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-heading font-bold text-navy-900">TennisCoach AI</h1>
-              <p className="text-sm text-navy-50">Your personal tennis coach</p>
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-xl font-heading font-bold text-navy-900 truncate">
+                TennisCoach AI
+              </h1>
+              <p className="hidden sm:block text-sm text-navy-50">Your personal tennis coach</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={handleRagToggle}
-              className={`px-3 py-2 rounded-lg text-left transition-colors flex items-start gap-2 border-2 border-white shadow-md max-w-[14rem] sm:max-w-none ${
+              className={`px-2.5 py-2 sm:px-3 rounded-lg text-left transition-colors flex items-center sm:items-start gap-1.5 sm:gap-2 border-2 border-white shadow-md ${
                 ragEnabled
                   ? 'bg-wimbledon-500 text-white'
                   : 'bg-clay-100 text-navy-900 hover:bg-clay-200'
@@ -187,13 +190,14 @@ export default function ChatInterface() {
               }
               aria-pressed={ragEnabled}
             >
-              <BookOpen className="w-4 h-4 mt-0.5 shrink-0" />
+              <BookOpen className="w-4 h-4 sm:mt-0.5 shrink-0" />
               <span className="leading-tight">
-                <span className="block text-sm font-medium">
-                  Make my AI smarter
+                <span className="block text-xs sm:text-sm font-medium">
+                  <span className="sm:hidden">Smarter</span>
+                  <span className="hidden sm:inline">Make my AI smarter</span>
                 </span>
                 <span
-                  className={`block text-[11px] ${
+                  className={`hidden sm:block text-[11px] ${
                     ragEnabled ? 'text-white/85' : 'text-navy-50'
                   }`}
                 >
@@ -205,23 +209,24 @@ export default function ChatInterface() {
             </button>
             <button
               onClick={() => setShowProfile(true)}
-              className="px-4 py-2 bg-clay-100 hover:bg-clay-200 rounded-lg text-sm font-medium text-navy-900 transition-colors flex items-center gap-2"
+              className="px-2.5 py-2 sm:px-4 bg-clay-100 hover:bg-clay-200 rounded-lg text-sm font-medium text-navy-900 transition-colors flex items-center gap-2"
+              aria-label="Profile"
             >
               <User className="w-4 h-4" />
-              Profile
+              <span className="hidden sm:inline">Profile</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message, index) => (
             <React.Fragment key={index}>
               {/* Tennis net divider between turns */}
               {index > 0 && messages[index - 1].role !== message.role && (
-                <div className="flex items-center justify-center my-6">
+                <div className="flex items-center justify-center my-4 sm:my-6">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent max-w-xs" />
                   <div className="mx-3 text-white/60 text-xs tracking-widest">NET</div>
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent max-w-xs" />
@@ -238,9 +243,9 @@ export default function ChatInterface() {
             </React.Fragment>
           ))}
           {isLoading && (
-            <div className="flex justify-start mb-6">
+            <div className="flex justify-start mb-4 sm:mb-6">
               <div
-                className="bg-gradient-to-br from-[#C8E6C9] to-[#E8F5E9] rounded-md px-5 py-4 border-2 border-white shadow-md relative"
+                className="bg-gradient-to-br from-[#C8E6C9] to-[#E8F5E9] rounded-md px-4 py-3 sm:px-5 sm:py-4 border-2 border-white shadow-md relative"
                 style={{
                   backgroundImage: 'linear-gradient(135deg, #C8E6C9 0%, #E8F5E9 50%, #C8E6C9 100%)',
                 }}
@@ -263,20 +268,20 @@ export default function ChatInterface() {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-clay-200 px-4 py-4">
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex gap-3">
+      <div className="bg-white border-t border-clay-200 px-3 py-3 sm:px-4 sm:py-4 shrink-0">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex gap-2 sm:gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me anything about tennis..."
-            className="flex-1 px-4 py-3 border border-clay-200 rounded-full focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent bg-clay-50 text-navy-900 placeholder:text-navy-50"
+            placeholder="Ask about tennis..."
+            className="flex-1 min-w-0 px-4 py-3 border border-clay-200 rounded-full focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent bg-clay-50 text-navy-900 placeholder:text-navy-50 text-base"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-6 py-3 bg-clay-300 text-white rounded-full font-medium hover:bg-clay-400 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            className="px-4 sm:px-6 py-3 bg-clay-300 text-white rounded-full font-medium hover:bg-clay-400 focus:outline-none focus:ring-2 focus:ring-clay-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shrink-0"
           >
             Send
           </button>
@@ -300,6 +305,7 @@ export default function ChatInterface() {
           onClose={() => setShowProfile(false)}
           onUpdate={handleProfileUpdate}
           onClear={handleProfileClear}
+          startInEditMode
         />
       )}
     </div>

@@ -45,38 +45,57 @@ export default function FindACourt() {
   const [markers, setMarkers] = useState<any[]>([]);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
 
-  // Check if Google Maps API is loaded
+  // Load Google Maps only on this tab (not globally — avoids blocking chat on mobile/LAN)
   useEffect(() => {
-    const checkGoogleMaps = () => {
-      const loaded = typeof window !== 'undefined' && !!(window as any).google?.maps;
-      setGoogleMapsLoaded(loaded);
-      console.log('=== DEBUG: Google Maps loaded ===', loaded);
+    if (typeof window === 'undefined') return;
+
+    const markLoaded = () => {
+      if ((window as any).google?.maps) {
+        setGoogleMapsLoaded(true);
+      }
     };
 
-    // Check immediately
-    checkGoogleMaps();
+    if ((window as any).google?.maps) {
+      markLoaded();
+      return;
+    }
 
-    // Also listen for our custom event
-    window.addEventListener('google-maps-loaded', checkGoogleMaps);
-
-    // Poll for a few seconds in case the event is missed
-    const interval = setInterval(() => {
-      if ((window as any).google?.maps) {
-        checkGoogleMaps();
+    const existing = document.querySelector<HTMLScriptElement>('script[data-tennis-google-maps]');
+    if (existing) {
+      existing.addEventListener('load', markLoaded);
+      const interval = setInterval(() => {
+        if ((window as any).google?.maps) {
+          markLoaded();
+          clearInterval(interval);
+        }
+      }, 300);
+      return () => {
+        existing.removeEventListener('load', markLoaded);
         clearInterval(interval);
-      }
-    }, 500);
+      };
+    }
 
-    // Cleanup after 10 seconds
-    const timeout = setTimeout(() => {
-      clearInterval(interval);
-      window.removeEventListener('google-maps-loaded', checkGoogleMaps);
-    }, 10000);
+    const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+    if (!apiKey) {
+      setError('Google Maps API key is not configured');
+      return;
+    }
+
+    (window as any).initGoogleMaps = () => {
+      (window as any).googleMapsLoaded = true;
+      setGoogleMapsLoaded(true);
+      window.dispatchEvent(new Event('google-maps-loaded'));
+    };
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
+    script.async = true;
+    script.dataset.tennisGoogleMaps = 'true';
+    script.onerror = () => setError('Failed to load Google Maps');
+    document.head.appendChild(script);
 
     return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-      window.removeEventListener('google-maps-loaded', checkGoogleMaps);
+      // Keep script cached for revisit; just avoid stale state updates
     };
   }, []);
 

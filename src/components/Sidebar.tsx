@@ -13,14 +13,15 @@ export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: Si
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    // Load collapse state from localStorage
+    // Load collapse state once on mount (do not depend on callback identity)
     const saved = localStorage.getItem('sidebar-collapsed');
-    if (saved) {
+    if (saved !== null) {
       const collapsed = saved === 'true';
       setIsCollapsed(collapsed);
       onCollapseChange?.(collapsed);
     }
-  }, [onCollapseChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only sync from storage
+  }, []);
 
   const handleCollapseToggle = () => {
     const newState = !isCollapsed;
@@ -38,11 +39,12 @@ export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: Si
   return (
     <nav
       className={`
+        hidden md:flex
         fixed left-0 top-0 h-full
         ${isCollapsed ? 'w-16' : 'w-60'}
         bg-clay-100 border-r border-clay-200
         transition-all duration-300
-        flex flex-col
+        flex-col
         shadow-sm
         z-50
       `}
