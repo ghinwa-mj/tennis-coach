@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { searchVideos } from '@/lib/youtube/search';
+import { searchVideos, getYouTubeKeyDebug } from '@/lib/youtube/search';
 import {
   RecommendationRequest,
   RecommendationResponse,
@@ -182,8 +182,14 @@ export async function POST(request: NextRequest) {
     // Search YouTube for each query
     const allVideos: any[] = [];
     const seenVideoIds = new Set<string>();
+    const searchErrors: string[] = [];
     const maxVideos = 6; // Always show max 6 videos
     const videosPerQuery = 6; // Fetch 6 videos per query
+    const youtubeKeyDebug = getYouTubeKeyDebug();
+
+    // #region agent log
+    fetch('http://127.0.0.1:7851/ingest/f2ae9147-feb1-4a15-82f2-ba0efeea7bd3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'9be608'},body:JSON.stringify({sessionId:'9be608',runId:'post-fix',hypothesisId:'A',location:'recommendations/route.ts:beforeSearch',message:'starting youtube searches',data:{searchQueries,customQuery:!!customQuery,...youtubeKeyDebug},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     for (const query of searchQueries) {
       console.log(`Searching for: "${query}"`);
@@ -207,12 +213,18 @@ export async function POST(request: NextRequest) {
           break;
         }
       } catch (searchError) {
+        const msg =
+          searchError instanceof Error ? searchError.message : String(searchError);
         console.error(`Error searching for "${query}":`, searchError);
+        searchErrors.push(`${query}: ${msg}`);
         // Continue with next query
       }
     }
 
     console.log(`Total unique videos found: ${allVideos.length}`);
+    // #region agent log
+    fetch('http://127.0.0.1:7851/ingest/f2ae9147-feb1-4a15-82f2-ba0efeea7bd3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'9be608'},body:JSON.stringify({sessionId:'9be608',runId:'post-fix',hypothesisId:'D',location:'recommendations/route.ts:afterSearch',message:'youtube search finished',data:{videoCount:allVideos.length,searchErrorCount:searchErrors.length,searchErrors:searchErrors.slice(0,3),...youtubeKeyDebug},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     // Generate reasoning text
     let reasoning: string;
@@ -236,9 +248,19 @@ export async function POST(request: NextRequest) {
       reasoning += ', I found these videos to help you improve.';
     }
 
-    const responseBody: RecommendationResponse = {
+    const responseBody: RecommendationResponse & {
+      _debug?: Record<string, unknown>;
+    } = {
       recommendations: allVideos,
       reasoning,
+      // Temporary debug payload for production verification (no secrets).
+      _debug: {
+        ...youtubeKeyDebug,
+        queryCount: searchQueries.length,
+        videoCount: allVideos.length,
+        searchErrors: searchErrors.slice(0, 3),
+        usedCustomQuery: Boolean(customQuery && customQuery.trim()),
+      },
     };
 
     return NextResponse.json(responseBody);
