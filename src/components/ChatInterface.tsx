@@ -31,7 +31,7 @@ export default function ChatInterface() {
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [ragEnabled, setRagEnabled] = useState(false);
+  const [ragEnabled, setRagEnabled] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -175,15 +175,33 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleRagToggle}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border-2 border-white shadow-md ${
+              className={`px-3 py-2 rounded-lg text-left transition-colors flex items-start gap-2 border-2 border-white shadow-md max-w-[14rem] sm:max-w-none ${
                 ragEnabled
                   ? 'bg-wimbledon-500 text-white'
                   : 'bg-clay-100 text-navy-900 hover:bg-clay-200'
               }`}
-              title={ragEnabled ? 'RAG enabled - Using knowledge base' : 'RAG disabled - Using general knowledge'}
+              title={
+                ragEnabled
+                  ? 'On: answers draw from tennis coaching documentation'
+                  : 'Off: answers use general tennis knowledge only'
+              }
+              aria-pressed={ragEnabled}
             >
-              <BookOpen className="w-4 h-4" />
-              {ragEnabled ? 'RAG On' : 'RAG Off'}
+              <BookOpen className="w-4 h-4 mt-0.5 shrink-0" />
+              <span className="leading-tight">
+                <span className="block text-sm font-medium">
+                  Make my AI smarter
+                </span>
+                <span
+                  className={`block text-[11px] ${
+                    ragEnabled ? 'text-white/85' : 'text-navy-50'
+                  }`}
+                >
+                  {ragEnabled
+                    ? 'Powered by coaching docs'
+                    : 'Using general knowledge'}
+                </span>
+              </span>
             </button>
             <button
               onClick={() => setShowProfile(true)}

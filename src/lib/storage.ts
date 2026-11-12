@@ -50,15 +50,16 @@ export const storage = {
     }
   },
 
-  // RAG settings
+  // RAG settings (default ON when unset)
   isRAGEnabled(): boolean {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') return true;
 
     try {
       const stored = localStorage.getItem(RAG_ENABLED_KEY);
+      if (stored === null) return true;
       return stored === 'true';
     } catch {
-      return false;
+      return true;
     }
   },
 
