@@ -124,23 +124,6 @@ export default function OnboardingModal({ onComplete, onSkip }: OnboardingModalP
                   )}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-navy-900 mb-2">
-                  How many years have you been playing?
-                </label>
-                <input
-                  type="number"
-                  value={profile.yearsPlaying || ''}
-                  onChange={(e) =>
-                    updateProfile({ yearsPlaying: parseInt(e.target.value) || 0 })
-                  }
-                  placeholder="Number of years"
-                  min="0"
-                  max="50"
-                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
-                />
-              </div>
             </>
           )}
 

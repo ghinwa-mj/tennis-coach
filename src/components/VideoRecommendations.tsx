@@ -384,7 +384,7 @@ export default function VideoRecommendations() {
             <textarea
               value={customQuery}
               onChange={(e) => setCustomQuery(e.target.value)}
-              placeholder="e.g., Improve my backhand slice, serving tips for beginners..."
+              placeholder="e.g., backhand slice, serve toss, footwork drills..."
               className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-clay-400 focus:border-transparent resize-none bg-clay-50 text-navy-900 placeholder:text-navy-50 text-base"
               rows={4}
               autoFocus

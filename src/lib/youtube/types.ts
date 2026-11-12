@@ -87,7 +87,7 @@ export interface RecommendationRequest {
   userProfile: {
     name?: string;
     skillLevel?: string;
-    yearsPlaying?: string;
+    yearsPlaying?: string; // legacy; no longer collected in UI
     playingStyle?: string;
     goals?: string[];
     focusAreas?: string[];

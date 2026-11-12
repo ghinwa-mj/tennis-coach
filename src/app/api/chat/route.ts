@@ -32,10 +32,6 @@ function buildPersonalizedPrompt(userProfile: UserProfile): string {
   prompt += `\n\nPlayer Profile:
 - Skill Level: ${userProfile.skillLevel}`;
 
-  if (userProfile.yearsPlaying) {
-    prompt += `\n- Years Playing: ${userProfile.yearsPlaying}`;
-  }
-
   if (userProfile.playingStyle) {
     prompt += `\n- Playing Style: ${userProfile.playingStyle}`;
   }

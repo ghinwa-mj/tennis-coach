@@ -134,19 +134,6 @@ export default function ProfileModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-navy-900 mb-2">Years Playing</label>
-                <input
-                  type="number"
-                  value={editedProfile.yearsPlaying || ''}
-                  onChange={(e) => updateField('yearsPlaying', parseInt(e.target.value) || 0)}
-                  placeholder="Number of years"
-                  min="0"
-                  max="50"
-                  className="w-full px-4 py-3 border border-clay-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-wimbledon-500 bg-clay-50 text-base"
-                />
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-navy-900 mb-2">Playing Style</label>
                 <select
                   value={editedProfile.playingStyle || ''}
@@ -236,15 +223,6 @@ export default function ProfileModal({
                   {profile.skillLevel ? skillLevelLabels[profile.skillLevel] : 'Not set'}
                 </div>
               </div>
-
-              {profile.yearsPlaying !== undefined && (
-                <div>
-                  <div className="text-sm text-navy-50">Years Playing</div>
-                  <div className="text-lg font-medium text-navy-900">
-                    {profile.yearsPlaying} years
-                  </div>
-                </div>
-              )}
 
               {profile.playingStyle && (
                 <div>

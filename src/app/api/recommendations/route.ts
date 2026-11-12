@@ -21,10 +21,6 @@ Player Profile:
 - Skill Level: ${userProfile.skillLevel || 'Not specified'}
 `;
 
-  if (userProfile.yearsPlaying) {
-    prompt += `- Years Playing: ${userProfile.yearsPlaying}\n`;
-  }
-
   if (userProfile.playingStyle) {
     prompt += `- Playing Style: ${userProfile.playingStyle}\n`;
   }
@@ -63,6 +59,17 @@ Examples:
 - Advanced working on volley: ["advanced tennis volley technique", "net game transition tennis"]`;
 
   return prompt;
+}
+
+/**
+ * Keep custom searches in tennis — bare terms like "serving" otherwise
+ * match food/military/etc. content on YouTube.
+ */
+function ensureTennisSearchQuery(query: string): string {
+  const trimmed = query.trim().replace(/\s+/g, ' ');
+  if (!trimmed) return 'tennis';
+  if (/\btennis\b/i.test(trimmed)) return trimmed;
+  return `tennis ${trimmed}`;
 }
 
 /**
@@ -124,10 +131,11 @@ export async function POST(request: NextRequest) {
     let searchQueries: string[];
     let claudeResponse: string | undefined;
 
-    // If custom query is provided, use it directly
+    // If custom query is provided, scope it to tennis before searching
     if (customQuery && customQuery.trim()) {
-      console.log('Using custom query:', customQuery);
-      searchQueries = [customQuery.trim()];
+      const tennisQuery = ensureTennisSearchQuery(customQuery);
+      console.log('Using custom query:', customQuery, '→', tennisQuery);
+      searchQueries = [tennisQuery];
     } else {
       // Otherwise, use Claude to generate search queries based on profile
       // Build prompt for Claude
