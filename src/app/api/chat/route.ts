@@ -3,7 +3,7 @@ import { wrapAnthropic } from 'langsmith/wrappers/anthropic';
 import { uuid7 } from 'langsmith';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserProfile } from '@/types/user';
-import { getVectorStore, SearchResult } from '@/lib/rag/vectorStore';
+import type { SearchResult } from '@/lib/rag/types';
 import { applyVisitorCookie, enforceChatRateLimit } from '@/lib/rateLimit';
 
 const anthropic = wrapAnthropic(
@@ -224,6 +224,8 @@ export async function POST(request: NextRequest) {
 
     if (ragEnabled) {
       try {
+        // Dynamic import keeps Chroma out of the cold path / helps Netlify function size
+        const { getVectorStore } = await import('@/lib/rag/vectorStore');
         const vectorStore = getVectorStore();
         await vectorStore.initialize();
 

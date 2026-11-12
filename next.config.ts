@@ -1,18 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Webpack configuration to handle ChromaDB modules
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Externalize ChromaDB modules to avoid bundling issues
-      config.externals = config.externals || [];
-      config.externals.push({
-        '@chroma-core/ai-embeddings-common': 'commonjs @chroma-core/ai-embeddings-common',
-        '@chroma-core/default-embed': 'commonjs @chroma-core/default-embed',
-      });
-    }
-    return config;
-  },
+  // Keep heavy/native packages out of the webpack server bundle.
+  // RAG still works at runtime via Chroma Cloud + OpenRouter embeddings.
+  serverExternalPackages: [
+    "chromadb",
+    "@chroma-core/default-embed",
+    "@chroma-core/ai-embeddings-common",
+    "@huggingface/transformers",
+    "onnxruntime-node",
+    "onnxruntime-web",
+    "pdf-parse",
+    "pdf2json",
+  ],
 };
 
 export default nextConfig;

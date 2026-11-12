@@ -1,5 +1,7 @@
 [build]
   command = "npm run build"
+  # Leave publish unset so @netlify/plugin-nextjs owns the output dir.
+  # In the Netlify UI, clear Publish directory if it was set to ".next".
 
 [build.environment]
   # Next.js 16 requires Node.js 20.9+

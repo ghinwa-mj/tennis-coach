@@ -1,10 +1,12 @@
 import { ChromaClient, CloudClient } from 'chromadb';
-import { Chunk } from '@/utilities/pdfProcessor';
+import type { Chunk, SearchResult } from '@/lib/rag/types';
 import {
   embedDocuments,
   embedQuery,
   OPENROUTER_EMBEDDING_MODEL,
 } from '@/lib/rag/openrouterEmbeddings';
+
+export type { SearchResult } from '@/lib/rag/types';
 
 function compactMetadata(meta: Record<string, unknown>): Record<string, string | number | boolean> {
   const out: Record<string, string | number | boolean> = {};
@@ -15,24 +17,6 @@ function compactMetadata(meta: Record<string, unknown>): Record<string, string |
     }
   }
   return out;
-}
-
-export interface SearchResult {
-  text: string;
-  metadata: {
-    filename: string;
-    category: string;
-    chunkIndex: number;
-    totalPages: number;
-    origin?: string;
-    // Citation metadata
-    paperId?: string;
-    title?: string;
-    authors?: string;
-    year?: number;
-    url?: string;
-  };
-  score?: number;
 }
 
 export class VectorStore {

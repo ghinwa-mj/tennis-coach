@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
+import type { Chunk } from '@/lib/rag/types';
+
+export type { Chunk } from '@/lib/rag/types';
 
 const require = createRequire(import.meta.url);
 
@@ -38,25 +41,6 @@ function envPositiveInt(name: string, fallback: number): number {
   if (raw === undefined || raw === '') return fallback;
   const n = parseInt(raw, 10);
   return Number.isFinite(n) && n > 0 ? n : fallback;
-}
-
-export interface Chunk {
-  text: string;
-  metadata: {
-    filename: string;
-    category: string;
-    chunkIndex: number;
-    totalPages: number;
-    /** Source corpus (from folder under pdfs/). */
-    origin: string;
-    // Citation metadata
-    paperId?: string;
-    title?: string;
-    authors?: string[];
-    year?: number;
-    url?: string;
-    abstract?: string;
-  };
 }
 
 export class PDFProcessor {
