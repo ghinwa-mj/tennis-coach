@@ -4,3 +4,6 @@
 [build.environment]
   # Next.js 16 requires Node.js 20.9+
   NODE_VERSION = "22"
+  # NEXT_PUBLIC_* is intentionally inlined into the client bundle.
+  # LANGSMITH_ENDPOINT is a public API base URL, not a credential.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_YOUTUBE_API_KEY,LANGSMITH_ENDPOINT"
