@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Source_Sans_3, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+// Self-hosted to avoid intermittent Netlify/CI failures from next/font/google
+// (Google sometimes returns extensionless font URLs that crash the loader).
+const cormorant = localFont({
+  src: "./fonts/cormorant-garamond.woff2",
   variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "400 700",
   display: "swap",
 });
 
-const sourceSans = Source_Sans_3({
+const sourceSans = localFont({
+  src: "./fonts/source-sans-3.woff2",
   variable: "--font-source-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: "300 700",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "./fonts/jetbrains-mono.woff2",
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400 500",
   display: "swap",
 });
 
