@@ -9,6 +9,7 @@ interface TicketMessageBubbleProps {
   sources?: Array<{ citation: string; metadata: any }>;
   serialNumber?: string;
   timestamp?: string;
+  topics?: string[];
 }
 
 export default function TicketMessageBubble({
@@ -17,6 +18,7 @@ export default function TicketMessageBubble({
   sources,
   serialNumber,
   timestamp,
+  topics,
 }: TicketMessageBubbleProps) {
   const isUser = role === 'user';
 
@@ -60,28 +62,47 @@ export default function TicketMessageBubble({
     : content;
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
       <div
         className={`
-          relative max-w-[80%] p-5 rounded-lg shadow-sm
-          transition-all duration-200
+          relative max-w-[85%] p-6 rounded-md shadow-md
+          transition-all duration-200 border-2
           ${
             isUser
-              ? 'bg-clay-100 border-l-4 border-clay-400'
-              : 'bg-ausopen-50 border-l-4 border-ausopen-500'
+              ? 'bg-gradient-to-br from-[#D4A574] to-[#E8C4A0] border-white'
+              : 'bg-gradient-to-br from-[#C8E6C9] to-[#E8F5E9] border-white'
           }
         `}
+        style={{
+          backgroundImage: isUser
+            ? 'linear-gradient(135deg, #D4A574 0%, #E8C4A0 50%, #D4A574 100%)'
+            : 'linear-gradient(135deg, #C8E6C9 0%, #E8F5E9 50%, #C8E6C9 100%)',
+        }}
       >
-        {/* Ticket stub header with timestamp */}
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-black/10">
+        {/* Court line accent dots */}
+        <div className={`
+          absolute top-3 left-3 flex gap-1
+          ${isUser ? 'opacity-40' : 'opacity-40'}
+        `}>
+          <div className={`w-1 h-1 rounded-full ${isUser ? 'bg-white' : 'bg-wimbledon-500'}`} />
+          <div className={`w-1 h-1 rounded-full ${isUser ? 'bg-white' : 'bg-wimbledon-500'}`} />
+        </div>
+
+        {/* Metadata header - refined court style */}
+        <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-white/40">
           <div className="flex items-center gap-2">
-            {/* Serial number hidden per user feedback */}
+            <div className={`
+              w-2 h-2 rounded-full
+              ${isUser ? 'bg-white' : 'bg-wimbledon-500'}
+            `} />
+            <span className={`text-xs font-semibold uppercase tracking-wide ${
+              isUser ? 'text-white' : 'text-wimbledon-700'
+            }`}>
+              {isUser ? 'Player' : 'Coach'}
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-medium ${isUser ? 'text-clay-400' : 'text-ausopen-500'}`}>
-              {isUser ? 'You' : 'TennisCoach AI'}
-            </span>
-            <span className="text-xs text-navy-50">{displayTimestamp}</span>
+            <span className="text-xs font-mono text-navy-400">{displayTimestamp}</span>
           </div>
         </div>
 
@@ -126,6 +147,15 @@ export default function TicketMessageBubble({
             >
               {processedContent}
             </ReactMarkdown>
+          )}
+          {topics && topics.length > 0 && (
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 list-none p-0 m-0">
+              {topics.map((topic) => (
+                <li key={topic} className="text-sm text-navy-900">
+                  {topic}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>

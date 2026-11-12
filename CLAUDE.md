@@ -59,6 +59,7 @@ src/
 │   ├── TicketMessageBubble.tsx  # Individual message component
 │   ├── VideoRecommendations.tsx  # Video recommendations display
 │   ├── VideoCard.tsx         # Enhanced video card with overlays
+│   ├── FindACourt.tsx        # Google Places API court finder
 │   ├── OnboardingModal.tsx   # First-time user setup
 │   ├── ProfileModal.tsx      # User profile management
 │   └── EmbeddedPlayer.tsx    # YouTube video player
@@ -98,8 +99,9 @@ Create `.env.local` in the project root:
 # Required for AI chat functionality
 OPENROUTER_API_KEY=your_openrouter_key_here
 
-# Required for YouTube video recommendations
-YOUTUBE_API_KEY=your_youtube_api_key_here
+# Required for YouTube video recommendations AND Google Places/Maps
+# This key must have: YouTube Data API v3, Places API, Maps JavaScript API
+NEXT_PUBLIC_YOUTUBE_API_KEY=your_youtube_api_key_here
 
 # Required for RAG knowledge base
 CHROMADB_API_KEY=your_chromadb_key_here
@@ -108,13 +110,23 @@ CHROMADB_COLLECTION=tennis_coaching
 
 **Note:** Never commit `.env.local` to git. Use `.env.example` as a template.
 
+**Google APIs:** The YouTube API key also works for Google Places API since they're both Google services. Make sure you've enabled:
+- YouTube Data API v3
+- Places API
+- Maps JavaScript API
+
 ## Key Features
 
 1. **RAG-Powered Chat:** Retrieves relevant tennis coaching content from ITF literature
 2. **Video Recommendations:** Personalized YouTube video suggestions based on user profile
-3. **User Profiles:** Skill level, goals, and focus areas for personalization
-4. **Collapsible Left Rail:** Space-efficient navigation
-5. **Responsive Design:** Mobile-friendly (sidebar collapses, bottom nav option)
+3. **Find a Court:** Google Places API integration to discover nearby tennis courts
+   - Interactive map with court markers
+   - List view with photos, ratings, and details
+   - Filters by rating and open hours
+   - Adjustable search radius
+4. **User Profiles:** Skill level, goals, and focus areas for personalization
+5. **Collapsible Left Rail:** Space-efficient navigation
+6. **Responsive Design:** Mobile-friendly (sidebar collapses, bottom nav option)
 
 ## Important Conventions
 

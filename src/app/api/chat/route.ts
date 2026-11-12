@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
             metadata: {
               thread_id: threadId,
               user_question: questionForMetadata,
-              model: 'claude-sonnet-4-20250514',
+              model: 'claude-sonnet-4-5',
               messageCount: messages.length,
               hasProfile: hasValidProfile,
               ragEnabled,
@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
 
     const response = await anthropic.messages.create(
       {
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1024,
         system: systemPrompt,
         messages: anthropicMessages,
@@ -307,8 +307,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error calling Anthropic API:', error);
+    const detail =
+      error instanceof Error ? error.message : 'Unknown Anthropic API error';
     return NextResponse.json(
-      { error: 'Failed to get response from TennisCoach AI' },
+      { error: 'Failed to get response from TennisCoach AI', detail },
       { status: 500 }
     );
   }

@@ -80,12 +80,12 @@ export default function Sidebar({ activeTab, onTabChange, onCollapseChange }: Si
               key={item.id}
               onClick={() => onTabChange(item.id)}
               className={`
-                w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200
+                w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 border-2
                 ${isCollapsed ? 'justify-center px-3' : ''}
                 ${
                   activeTab === item.id
-                    ? 'bg-wimbledon-500 text-white shadow-md'
-                    : 'text-navy-900 hover:bg-clay-200'
+                    ? 'bg-wimbledon-500 text-white border-white shadow-md'
+                    : 'border-transparent text-navy-900 hover:bg-clay-200'
                 }
               `}
               title={isCollapsed ? item.label : undefined}

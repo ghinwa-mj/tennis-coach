@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { Trophy, BookOpen, User } from 'lucide-react';
 import TicketMessageBubble from './TicketMessageBubble';
 import OnboardingModal from './OnboardingModal';
@@ -14,7 +15,17 @@ interface Message {
   sources?: Array<{ citation: string; metadata: any }>;
   serialNumber?: string;
   timestamp?: string;
+  topics?: string[];
 }
+
+const WELCOME_TOPICS = [
+  '🎾 Technique (forehand, backhand, serve, volley)',
+  '🧠 Tactics and strategy',
+  '💪 Fitness and conditioning',
+  '🎯 Equipment recommendations',
+  '📖 Rules and scoring',
+  '🧘 Mental game tips',
+];
 
 export default function ChatInterface() {
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
@@ -25,7 +36,8 @@ export default function ChatInterface() {
     {
       role: 'assistant',
       content:
-        "Hey there! I'm TennisCoach AI. 👋 Welcome to your personal tennis coach!\n\nI'm here to help you improve your game, whether you're just starting out or looking to take your skills to the next level.\n\nAsk me anything about:\n• 🎾 Technique (forehand, backhand, serve, volley)\n• 🧠 Tactics and strategy\n• 💪 Fitness and conditioning\n• 🎯 Equipment recommendations\n• 📖 Rules and scoring\n• 🧘 Mental game tips\n\nWhat would you like to work on today?",
+        "Hey there! I'm TennisCoach AI. 👋 Welcome to your personal tennis coach!\n\nAsk me anything about:",
+      topics: WELCOME_TOPICS,
     },
   ]);
   const [input, setInput] = useState('');
@@ -149,9 +161,9 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleRagToggle}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border-2 border-white shadow-md ${
                 ragEnabled
-                  ? 'bg-wimbledon-500 text-white hover:bg-wimbledon-600 shadow-sm'
+                  ? 'bg-wimbledon-500 text-white'
                   : 'bg-clay-100 text-navy-900 hover:bg-clay-200'
               }`}
               title={ragEnabled ? 'RAG enabled - Using knowledge base' : 'RAG disabled - Using general knowledge'}
@@ -174,23 +186,42 @@ export default function ChatInterface() {
       <div className="flex-1 overflow-y-auto px-4 py-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message, index) => (
-            <div key={index}>
+            <React.Fragment key={index}>
+              {/* Tennis net divider between turns */}
+              {index > 0 && messages[index - 1].role !== message.role && (
+                <div className="flex items-center justify-center my-6">
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent max-w-xs" />
+                  <div className="mx-3 text-white/60 text-xs tracking-widest">NET</div>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent max-w-xs" />
+                </div>
+              )}
               <TicketMessageBubble
                 role={message.role}
                 content={message.content}
                 sources={message.sources}
                 serialNumber={message.serialNumber}
                 timestamp={message.timestamp}
+                topics={message.topics}
               />
-            </div>
+            </React.Fragment>
           ))}
           {isLoading && (
-            <div className="flex justify-start mb-4">
-              <div className="bg-ausopen-50 rounded-lg px-4 py-3 border-l-4 border-ausopen-500 shadow-sm">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce delay-100" />
-                  <div className="w-2 h-2 bg-ausopen-500 rounded-full animate-bounce delay-200" />
+            <div className="flex justify-start mb-6">
+              <div
+                className="bg-gradient-to-br from-[#C8E6C9] to-[#E8F5E9] rounded-md px-5 py-4 border-2 border-white shadow-md relative"
+                style={{
+                  backgroundImage: 'linear-gradient(135deg, #C8E6C9 0%, #E8F5E9 50%, #C8E6C9 100%)',
+                }}
+              >
+                {/* Court line dots */}
+                <div className="absolute top-2 left-2 flex gap-1 opacity-40">
+                  <div className="w-1 h-1 rounded-full bg-wimbledon-500" />
+                  <div className="w-1 h-1 rounded-full bg-wimbledon-500" />
+                </div>
+                <div className="flex gap-1.5 ml-4">
+                  <div className="w-2 h-2 bg-wimbledon-500 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-wimbledon-500 rounded-full animate-bounce delay-100" />
+                  <div className="w-2 h-2 bg-wimbledon-500 rounded-full animate-bounce delay-200" />
                 </div>
               </div>
             </div>
