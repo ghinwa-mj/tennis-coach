@@ -12,24 +12,11 @@ import {
 const API_KEY =
   process.env.YOUTUBE_v3_API || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
-const API_KEY_SOURCE = process.env.YOUTUBE_v3_API
-  ? 'YOUTUBE_v3_API'
-  : process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
-    ? 'NEXT_PUBLIC_YOUTUBE_API_KEY'
-    : 'none';
 
 if (!API_KEY) {
   console.warn(
     'Warning: neither YOUTUBE_v3_API nor NEXT_PUBLIC_YOUTUBE_API_KEY is set'
   );
-}
-
-export function getYouTubeKeyDebug() {
-  return {
-    hasYoutubeV3: Boolean(process.env.YOUTUBE_v3_API),
-    hasYoutubePublic: Boolean(process.env.NEXT_PUBLIC_YOUTUBE_API_KEY),
-    keySource: API_KEY_SOURCE,
-  };
 }
 
 /**
@@ -47,11 +34,7 @@ export async function searchVideos(
   }
 
   console.log(`[YouTube Search] Query: "${query}", MaxResults: ${maxResults}`);
-  console.log(`[YouTube Search] API Key configured: ${!!API_KEY} source=${API_KEY_SOURCE}`);
-  console.log(`[YouTube Search] API Key length: ${API_KEY.length}`);
-  // #region agent log
-  fetch('http://127.0.0.1:7851/ingest/f2ae9147-feb1-4a15-82f2-ba0efeea7bd3',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'9be608'},body:JSON.stringify({sessionId:'9be608',runId:'post-fix',hypothesisId:'A',location:'search.ts:searchVideos',message:'youtube search start',data:{query,maxResults,keySource:API_KEY_SOURCE,hasKey:!!API_KEY},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
+  console.log(`[YouTube Search] API Key configured: ${!!API_KEY}`);
 
   try {
     // Step 1: Search for videos
