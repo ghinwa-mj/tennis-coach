@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
     }
 
     let searchQueries: string[];
+    let claudeResponse: string | undefined;
 
     // If custom query is provided, use it directly
     if (customQuery && customQuery.trim()) {
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
       const prompt = buildRecommendationsPrompt(userProfile);
 
       // Call Claude to generate search queries
-      let claudeResponse: string = '';
+      claudeResponse = '';
       try {
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-5',
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('=== YOUTUBE SEARCH ===');
-    if (typeof claudeResponse !== 'undefined') {
+    if (claudeResponse !== undefined) {
       console.log('Claude response:', claudeResponse);
     }
     console.log('Custom query:', customQuery);

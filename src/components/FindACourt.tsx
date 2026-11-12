@@ -11,6 +11,7 @@ interface Court {
   vicinity: string;
   formatted_address?: string;
   international_phone_number?: string;
+  types?: string[];
   opening_hours?: {
     open_now: boolean;
     periods?: any[];

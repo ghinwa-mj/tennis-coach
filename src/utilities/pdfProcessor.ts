@@ -11,6 +11,8 @@ export interface PaperMetadata {
   year?: number;
   abstract?: string;
   url?: string;
+  article_url?: string;
+  pdf_url?: string;
   section: string;
   local_pdf?: string;
 }
