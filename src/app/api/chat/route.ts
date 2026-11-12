@@ -4,6 +4,7 @@ import { uuid7 } from 'langsmith';
 import { NextRequest, NextResponse } from 'next/server';
 import { UserProfile } from '@/types/user';
 import { getVectorStore, SearchResult } from '@/lib/rag/vectorStore';
+import { applyVisitorCookie, enforceChatRateLimit } from '@/lib/rateLimit';
 
 const anthropic = wrapAnthropic(
   new Anthropic({
@@ -192,6 +193,18 @@ function deduplicateDocuments(docs: SearchResult[]): SearchResult[] {
 }
 
 export async function POST(request: NextRequest) {
+  const rate = await enforceChatRateLimit(request);
+  if (!rate.ok) {
+    return applyVisitorCookie(
+      NextResponse.json(
+        { error: rate.error, code: rate.code },
+        { status: rate.status }
+      ),
+      rate.visitorId,
+      rate.setCookie
+    );
+  }
+
   try {
     const { messages, userProfile, threadId: bodyThreadId, ragEnabled } = await request.json();
 
@@ -299,19 +312,27 @@ export async function POST(request: NextRequest) {
     const assistantMessage =
       response.content[0]?.type === 'text' ? response.content[0].text : '';
 
-    return NextResponse.json({
-      role: 'assistant',
-      content: assistantMessage,
-      sources: sources.length > 0 ? sources : undefined,
-      ragEnabled,
-    });
+    return applyVisitorCookie(
+      NextResponse.json({
+        role: 'assistant',
+        content: assistantMessage,
+        sources: sources.length > 0 ? sources : undefined,
+        ragEnabled,
+      }),
+      rate.visitorId,
+      rate.setCookie
+    );
   } catch (error) {
     console.error('Error calling Anthropic API:', error);
     const detail =
       error instanceof Error ? error.message : 'Unknown Anthropic API error';
-    return NextResponse.json(
-      { error: 'Failed to get response from TennisCoach AI', detail },
-      { status: 500 }
+    return applyVisitorCookie(
+      NextResponse.json(
+        { error: 'Failed to get response from TennisCoach AI', detail },
+        { status: 500 }
+      ),
+      rate.visitorId,
+      rate.setCookie
     );
   }
 }

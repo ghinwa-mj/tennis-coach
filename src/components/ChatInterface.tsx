@@ -102,9 +102,23 @@ export default function ChatInterface() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) {
+        const limitMessage =
+          typeof data?.error === 'string'
+            ? data.error
+            : 'Sorry, I had trouble connecting. Please try again in a moment!';
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: limitMessage,
+          },
+        ]);
+        return;
+      }
+
       const assistantMessage: Message = {
         ...data,
         serialNumber: generateSerialNumber(),
